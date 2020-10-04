@@ -7,10 +7,11 @@
             v-if="!loading"
             v-model="valid"
             lazy-validation
-            @submit.prevent="signUp"
+            class="form"
+            @submit.prevent="submitForm"
             @keydown.prevent.enter
           >
-            <h3>Register</h3>
+            <h2>Register</h2>
             <v-text-field
               v-model="user.email"
               :rules="rules.emailRules"
@@ -24,9 +25,11 @@
               type="password"
               required
             ></v-text-field>
-            <v-btn type="submit" :disabled="!valid" class="mx-auto"
-              >Sign Up</v-btn
-            >
+            <div class="text-center">
+              <v-btn type="submit" :disabled="!valid" color="primary"
+                >Sign Up</v-btn
+              >
+            </div>
           </v-form>
         </v-card>
         <v-progress-circular
@@ -44,14 +47,15 @@
 
 <script>
 import { validEmail, validPassword } from "../validators";
+import { mapState, mapActions } from "vuex";
+
 export default {
   data() {
     return {
-      loading: false,
       valid: false,
       user: {
-        email: "",
-        password: ""
+        email: "test@test.com",
+        password: "123456"
       },
       rules: {
         emailRules: [
@@ -66,11 +70,40 @@ export default {
       }
     };
   },
+  computed: {
+    ...mapState("users", { loading: "isCreatePending" })
+  },
   methods: {
-    submitForm() {}
+    ...mapActions("users", ["create"]),
+    submitForm() {
+      if (this.valid) {
+        const { User } = this.$FeathersVuex.api;
+        const user = new User(this.user);
+        user
+          .save()
+          .then(user => {
+            console.log(user);
+            this.$router.push("/login");
+          })
+          .catch(e => {
+            if (e.code === 409) {
+              this.$toasted.global.error("email already exist!");
+              return;
+            }
+            this.$toasted.gloabl.error(e.message);
+          });
+      }
+    }
   }
 };
 </script>
 
 <style lang="scss" scoped>
+h2 {
+  text-align: center;
+  margin-bottom: 16px;
+}
+.form {
+  width: 280px;
+}
 </style>
