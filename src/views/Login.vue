@@ -1,16 +1,15 @@
 <template>
   <v-container fluid fill-height>
     <v-layout column align-center>
-      <v-card max-width="320" class="pa-5">
+      <v-card max-width="320" class="pa-5" v-if="!loading">
         <v-form
-          v-if="!loading"
           v-model="valid"
           lazy-validation
           class="form"
           @submit.prevent="submitForm"
           @keydown.prevent.enter
         >
-          <h2>Register</h2>
+          <h2>Login</h2>
           <v-text-field
             v-model="user.email"
             :rules="rules.emailRules"
@@ -26,13 +25,13 @@
           ></v-text-field>
           <div class="text-center">
             <v-btn type="submit" :disabled="!valid" color="primary"
-              >Sign Up</v-btn
+              >Login</v-btn
             >
           </div>
         </v-form>
       </v-card>
       <v-progress-circular
-        v-if="loading"
+        v-else
         :size="70"
         :width="7"
         indeterminate
@@ -69,25 +68,22 @@ export default {
     };
   },
   computed: {
-    ...mapState("users", { loading: "isCreatePending" })
+    ...mapState("auth", { loading: "isAuthenticatePending" })
   },
   methods: {
-    ...mapActions("users", ["create"]),
+    ...mapActions("localAuth", ["login"]),
     submitForm() {
       if (this.valid) {
-        const { User } = this.$FeathersVuex.api;
-        const user = new User(this.user);
-        user
-          .save()
-          .then(user => {
-            console.log(user);
-            this.$router.push("/login");
+        this.$store
+          .dispatch("auth/authenticate", {
+            strategy: "local",
+            ...this.user
+          })
+          .then(() => {
+            this.$router.push("/boards");
           })
           .catch(e => {
-            if (e.code === 409) {
-              this.$toasted.global.error("email already exist!");
-              return;
-            }
+            console.error("Authentication error", e);
             this.$toasted.gloabl.error(e.message);
           });
       }

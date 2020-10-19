@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fill-height>
     <NavBar />
     <v-main>
       <v-slide-y-transition mode="out-in">

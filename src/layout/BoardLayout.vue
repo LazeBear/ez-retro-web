@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container :fluid="true">
     <NavBar />
     <v-main>
       <v-slide-y-transition mode="out-in">
