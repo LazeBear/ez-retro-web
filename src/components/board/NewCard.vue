@@ -4,12 +4,8 @@
       <span class="mdi mdi-plus-thick"></span>
     </div>
 
-    <template v-else>
-      <textarea
-        class="card__input"
-        @input="autoResizeMixin"
-        v-model="text"
-      ></textarea>
+    <div class="card__editing" v-else>
+      <TextArea class="card__input" v-model="text"></TextArea>
       <div class="card__footer">
         <v-btn depressed color="success" @click="onCreate">
           Create
@@ -19,14 +15,13 @@
           Cancel
         </v-btn>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
 <script>
-import autoResizeMixin from "../../mixins/autoResize";
+import TextArea from "./TextArea";
 export default {
-  mixins: [autoResizeMixin],
   data() {
     return {
       text: "",
@@ -42,7 +37,8 @@ export default {
       this.text = "";
       this.showInput = false;
     }
-  }
+  },
+  components: { TextArea }
 };
 </script>
 
@@ -53,6 +49,7 @@ export default {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
   padding: 10px;
   position: relative;
+  color: white;
 
   &__button {
     text-align: center;
@@ -70,6 +67,11 @@ export default {
   &__footer {
     display: flex;
     justify-content: space-between;
+  }
+
+  &__editing {
+    padding: 4px;
+    background: white;
   }
 }
 </style>

@@ -7,7 +7,9 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      this.$el.setAttribute('style', 'height', `${this.$el.scrollHeight}px`);
+      // console.log(());
+      this.$el.style.height = `${this.$el.scrollHeight}px`;
+      // this.$el.setAttribute('style', 'height', `${this.$el.scrollHeight}px`);
     });
   }
 };

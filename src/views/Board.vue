@@ -13,9 +13,16 @@
             ><span class="mdi mdi-cursor-move"></span>
           </span>
           <div class="list__header">
+            <ColorPicker
+              :color="list.color"
+              @onSelectColor="changeListColor(list._id, $event)"
+            ></ColorPicker>
             {{ list.name }}
           </div>
-          <NewCard @onSubmit="addCard(list._id, $event)"></NewCard>
+          <NewCard
+            @onSubmit="addCard(list._id, $event)"
+            :style="{ backgroundColor: list.color }"
+          ></NewCard>
           <Container
             class="list__cards"
             group-name="col"
@@ -51,6 +58,7 @@ import { mapState, mapGetters, mapActions } from "vuex";
 import { Container, Draggable } from "vue-smooth-dnd";
 import NewCard from "../components/board/NewCard";
 import Card from "../components/board/Card";
+import ColorPicker from "../components/board/ColorPicker";
 
 export default {
   data() {
@@ -86,6 +94,9 @@ export default {
       deleteCardById: "remove",
       updateCardById: "patch"
     }),
+    changeListColor(listId, color) {
+      this.updateListById([listId, { color }]);
+    },
     async addCard(listId, text) {
       const { Card } = this.$FeathersVuex.api;
       await new Card({
@@ -102,9 +113,6 @@ export default {
       this.deleteCardById(cardId);
     },
     onColumnDrop(dropResult) {
-      // const scene = Object.assign({}, this.scene);
-      // scene.children = applyDrag(scene.children, dropResult);
-      // this.scene = scene;
       const { removedIndex, addedIndex } = dropResult;
       if (removedIndex !== null && addedIndex !== null) {
         const array = [...this.lists];
@@ -234,7 +242,7 @@ export default {
       };
     }
   },
-  components: { Container, Draggable, NewCard, Card }
+  components: { Container, Draggable, NewCard, Card, ColorPicker }
 };
 </script>
 
@@ -260,14 +268,18 @@ export default {
   flex-direction: column;
   position: relative;
   width: 100%;
-  padding: 10px;
-  background-color: #f3f3f3;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
 
   &__header {
-    font-size: 18px;
+    font-size: 20px;
+    font-weight: 600;
     margin: 0 5px;
     padding-right: 4px;
+    display: flex;
+    align-items: center;
+
+    & > div {
+      margin-right: 8px;
+    }
   }
 
   &__drag-handle {
@@ -307,7 +319,7 @@ export default {
 }
 
 .cards-drop-preview {
-  background-color: rgba(150, 150, 200, 0.1);
+  background-color: blue;
   border: 1px dashed #abc;
   margin: 5px 45px 5px 5px;
 }

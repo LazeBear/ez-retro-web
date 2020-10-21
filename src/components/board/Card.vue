@@ -1,9 +1,9 @@
 <template>
   <div class="card">
-    <div class="card__delete-btn" @click="onDelete">
-      <span class="mdi mdi-delete-outline"></span>
-    </div>
     <div class="card__display" v-if="!isEditing">
+      <div class="card__delete-btn" @click="onDelete">
+        <span class="mdi mdi-delete-outline"></span>
+      </div>
       <div class="card__text">{{ card.text }}</div>
       <div class="card__footer">
         <div class="card__edit-btn" @click="onEdit">
@@ -12,11 +12,7 @@
       </div>
     </div>
     <div class="card__editing" v-else>
-      <textarea
-        class="card__input"
-        @input="autoResizeMixin"
-        v-model="text"
-      ></textarea>
+      <TextArea class="card__input" v-model="text"></TextArea>
       <div class="card__footer">
         <v-btn depressed color="success" @click="onUpdate">
           Update
@@ -31,9 +27,8 @@
 </template>
 
 <script>
-import autoResizeMixin from "../../mixins/autoResize";
+import TextArea from "./TextArea";
 export default {
-  mixins: [autoResizeMixin],
   props: ["card"],
   data() {
     return {
@@ -58,17 +53,18 @@ export default {
       this.isEditing = true;
       this.text = this.card.text;
     }
-  }
+  },
+  components: { TextArea }
 };
 </script>
 
 <style lang="scss" scoped>
 .card {
   margin: 5px;
-  background-color: white;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
   padding: 10px;
   position: relative;
+  color: white;
 
   &__delete-btn {
     position: absolute;
@@ -81,7 +77,7 @@ export default {
 
   &__edit-btn {
     cursor: pointer;
-    visibility: hidden;
+    visibility: visible;
   }
 
   &:hover {
@@ -91,9 +87,13 @@ export default {
     }
   }
 
-  &__display,
+  &__display {
+    margin-right: 12px;
+  }
+
   &__editing {
-    padding-right: 12px;
+    background-color: white;
+    padding: 2px;
   }
 
   &__text {
@@ -109,6 +109,7 @@ export default {
     resize: none;
     width: 100%;
     padding: 8px;
+    background-color: white;
   }
 
   &__footer {
