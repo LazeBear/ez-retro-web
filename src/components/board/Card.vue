@@ -9,6 +9,17 @@
         <div class="card__edit-btn" @click="onEdit">
           <span class="mdi mdi-pencil"></span>
         </div>
+        <div class="card__vote">
+          <div class="card__vote-btn">
+            <span
+              class="mdi"
+              :class="isVoted ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'"
+              @click="onVote"
+            >
+              {{ card.votes.length }}</span
+            >
+          </div>
+        </div>
       </div>
     </div>
     <div class="card__editing" v-else>
@@ -29,7 +40,7 @@
 <script>
 import TextArea from "./TextArea";
 export default {
-  props: ["card"],
+  props: ["card", "isVoted"],
   data() {
     return {
       text: "",
@@ -52,6 +63,9 @@ export default {
     onEdit() {
       this.isEditing = true;
       this.text = this.card.text;
+    },
+    onVote() {
+      this.$emit("onVote", this.card._id);
     }
   },
   components: { TextArea }
@@ -62,7 +76,7 @@ export default {
 .card {
   margin: 5px;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
-  padding: 10px;
+  padding: 8px;
   position: relative;
   color: white;
 
@@ -87,10 +101,6 @@ export default {
     }
   }
 
-  &__display {
-    margin-right: 12px;
-  }
-
   &__editing {
     background-color: white;
     padding: 2px;
@@ -101,6 +111,7 @@ export default {
     white-space: pre-line;
     min-height: 24px;
     font-size: 16px;
+    margin-right: 12px;
   }
 
   &__input {
@@ -115,6 +126,13 @@ export default {
   &__footer {
     display: flex;
     justify-content: space-between;
+
+    .card {
+      &__vote {
+        align-self: flex-end;
+        cursor: pointer;
+      }
+    }
   }
 }
 </style>

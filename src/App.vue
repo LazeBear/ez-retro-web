@@ -17,3 +17,15 @@ export default {
   })
 };
 </script>
+
+<style lang="scss">
+.card-drop-preview {
+  border: 1px dashed #007ac0;
+  margin: 5px;
+}
+
+.list-drop-preview {
+  border: 1px dashed #007ac0;
+  margin: 5px 45px 5px 5px;
+}
+</style>

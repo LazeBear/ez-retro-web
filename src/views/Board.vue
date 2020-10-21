@@ -32,8 +32,6 @@
             drop-class="card__ghost-drop"
             :drop-placeholder="dropPlaceholderOptions"
           >
-            <!-- <div @click="addCard(list._id)">Add one card</div> -->
-
             <Draggable
               v-for="card in getOrderedCardList(list._id)"
               :key="card.id"
@@ -41,8 +39,10 @@
               <Card
                 :style="{ backgroundColor: list.color }"
                 :card="card"
+                :isVoted="card.votes.includes(user._id)"
                 @onDelete="deleteCard"
                 @onUpdate="updateCard"
+                @onVote="voteCard"
               >
               </Card>
             </Draggable>
@@ -64,12 +64,12 @@ export default {
   data() {
     return {
       upperDropPlaceholderOptions: {
-        className: "cards-drop-preview",
+        className: "list-drop-preview",
         animationDuration: "150",
         showOnTop: true
       },
       dropPlaceholderOptions: {
-        className: "drop-preview",
+        className: "card-drop-preview",
         animationDuration: "150",
         showOnTop: true
       },
@@ -108,6 +108,17 @@ export default {
     },
     updateCard({ cardId, text }) {
       this.updateCardById([cardId, { text }]);
+    },
+    async voteCard(cardId) {
+      const card = this.findCardInStore(cardId);
+      const { _id: userId } = this.user;
+      const index = card.votes.findIndex(i => i === userId);
+      if (index !== -1) {
+        card.votes.splice(index, 1);
+      } else {
+        card.votes.push(userId);
+      }
+      await card.save();
     },
     async deleteCard(cardId) {
       this.deleteCardById(cardId);
@@ -186,7 +197,7 @@ export default {
   },
   computed: {
     ...mapState("board", ["droppingList", "draggingCard"]),
-    ...mapState("auth", { user: "payload" }),
+    ...mapState("auth", ["user"]),
     ...mapState("boards", {
       loadingBoard: "isGetPending",
       boardsError: "errorOnGet"
@@ -201,7 +212,10 @@ export default {
     }),
     ...mapGetters("boards", { findBoardInStore: "get" }),
     ...mapGetters("lists", { findListsInStore: "find" }),
-    ...mapGetters("cards", { findCardsInStore: "find" }),
+    ...mapGetters("cards", {
+      findCardsInStore: "find",
+      findCardInStore: "get"
+    }),
     board() {
       return this.findBoardInStore(this.$route.params.id);
     },
@@ -218,28 +232,6 @@ export default {
           boardId: this.$route.params.id
         }
       }).data;
-    },
-    scene() {
-      return {
-        type: "container",
-        props: {
-          orientation: "horizontal"
-        },
-        children: this.lists.map(list => ({
-          id: list._id,
-          type: "container",
-          name: list.name,
-          props: {
-            orientation: "vertical",
-            className: "list"
-          },
-          children: this.getOrderedCardList(list._id).map(card => ({
-            type: "draggable",
-            style: { backgroundColor: "lightpink" },
-            ...card
-          }))
-        }))
-      };
     }
   },
   components: { Container, Draggable, NewCard, Card, ColorPicker }
@@ -310,17 +302,5 @@ export default {
 .card__ghost-drop {
   transition: transform 0.18s ease-in-out;
   transform: rotateZ(0deg);
-}
-
-.drop-preview {
-  background-color: rgba(150, 150, 200, 0.9);
-  border: 1px dashed #abc;
-  margin: 5px;
-}
-
-.cards-drop-preview {
-  background-color: blue;
-  border: 1px dashed #abc;
-  margin: 5px 45px 5px 5px;
 }
 </style>

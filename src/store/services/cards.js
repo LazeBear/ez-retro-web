@@ -11,7 +11,9 @@ class Card extends BaseModel {
   static modelName = 'Card';
   // Define default properties here
   static instanceDefaults() {
-    return {};
+    return {
+      votes: []
+    };
   }
 }
 const servicePath = 'cards';
