@@ -398,7 +398,7 @@ export default {
   }
 
   &__container {
-    display: flex;
+    display: flex !important;
 
     & > div.smooth-dnd-draggable-wrapper {
       flex: 1;
