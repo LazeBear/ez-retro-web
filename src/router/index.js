@@ -26,6 +26,7 @@ function isLoggedIn(to, from, next) {
       next();
     })
     .catch(() => {
+      sessionStorage.setItem('redirect', to.path);
       next('/login');
     });
 }
@@ -34,6 +35,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
+    beforeEnter: redirectToBoardsIfLoggedIn,
     component: Home,
     meta: { layout: NormalLayout }
   },
@@ -59,7 +61,7 @@ const routes = [
   {
     path: '/boards',
     name: 'Boards',
-    meta: { layout: NormalLayout },
+    meta: { layout: BoardLayout },
     beforeEnter: isLoggedIn,
     component: () =>
       import(/* webpackChunkName: "about" */ '../views/MyBoards.vue')

@@ -51,8 +51,8 @@ export default {
     return {
       valid: false,
       user: {
-        email: "test@test.com",
-        password: "123456"
+        email: "",
+        password: ""
       },
       rules: {
         emailRules: [
@@ -80,7 +80,8 @@ export default {
             ...this.user
           })
           .then(() => {
-            this.$router.push("/boards");
+            const redirect = sessionStorage.getItem("redirect");
+            this.$router.push(redirect || "/boards");
           })
           .catch(e => {
             console.error("Authentication error", e);

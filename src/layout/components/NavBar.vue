@@ -1,7 +1,7 @@
 <template>
   <v-app-bar app color="primary" dark>
     <div class="d-flex align-center">
-      <v-btn text :to="{ name: 'home' }">EZ Retro</v-btn>
+      <v-btn text :to="{ name: 'Home' }">EZ Retro</v-btn>
     </div>
 
     <v-spacer></v-spacer>

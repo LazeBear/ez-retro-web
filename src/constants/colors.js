@@ -1,0 +1,18 @@
+export default {
+  BLACK_1: '#162121',
+  BLACK_2: '#2F3B47',
+  BLACK_3: '#47556D',
+  BLACK_4: '#555F83',
+  BLUE_1: '#05204A',
+  BLUE_2: '#435A9E',
+  BLUE_3: '#6277C8',
+  BLUE_4: '#8093F1',
+  GREEN_1: '#04E762',
+  GREEN_2: '#0DE17B',
+  GREEN_3: '#16DB93',
+  GREEN_4: '#2ED38C',
+  RED_1: '#CA392B',
+  RED_2: '#D75026',
+  RED_3: '#F27431',
+  RED_4: '#F25F5C'
+};

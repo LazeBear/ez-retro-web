@@ -1,15 +1,25 @@
 <template>
   <div class="card">
     <div class="card__display" v-if="!isEditing">
-      <div class="card__delete-btn" @click="onDelete">
-        <span class="mdi mdi-delete-outline"></span>
+      <div class="card__merge-btn" v-if="showMergeBtn" @click="onMerge">
+        <span class="mdi mdi-call-merge"></span>
       </div>
-      <div class="card__text">{{ card.text }}</div>
+      <div class="card__delete-btn" @click="onDelete">
+        <span class="mdi mdi-delete"></span>
+      </div>
+      <div class="card__text" :class="{ 'card__text--blur': blurCard }">
+        {{ displayText }}
+      </div>
+      <div class="card__author">
+        <span class="mdi mdi-account-circle"></span>
+        {{ card.user.displayName || card.user.email }}
+      </div>
       <div class="card__footer">
         <div class="card__edit-btn" @click="onEdit">
           <span class="mdi mdi-pencil"></span>
         </div>
-        <div class="card__vote">
+
+        <div class="card__vote" v-if="allowVote">
           <div class="card__vote-btn">
             <span
               class="mdi"
@@ -25,7 +35,7 @@
     <div class="card__editing" v-else>
       <TextArea class="card__input" v-model="text"></TextArea>
       <div class="card__footer">
-        <v-btn depressed color="success" @click="onUpdate">
+        <v-btn outlined color="success" @click="onUpdate">
           Update
         </v-btn>
 
@@ -38,20 +48,41 @@
 </template>
 
 <script>
+function randomLetters(length) {
+  let rdmString = "";
+  for (
+    ;
+    rdmString.length < length;
+    rdmString += Math.random()
+      .toString(36)
+      .substr(2)
+  );
+  return rdmString.substr(0, length);
+}
 import TextArea from "./TextArea";
 export default {
-  props: ["card", "isVoted"],
+  props: ["card", "isVoted", "blurCard", "allowVote", "showMergeBtn"],
   data() {
     return {
       text: "",
       isEditing: false
     };
   },
+  computed: {
+    displayText() {
+      return this.blurCard
+        ? randomLetters(this.card.text.length)
+        : this.card.text;
+    }
+  },
   methods: {
     onUpdate() {
       this.$emit("onUpdate", { cardId: this.card._id, text: this.text });
       this.text = "";
       this.isEditing = false;
+    },
+    onMerge() {
+      this.$emit("onMerge");
     },
     onCancel() {
       this.isEditing = false;
@@ -74,7 +105,7 @@ export default {
 
 <style lang="scss" scoped>
 .card {
-  margin: 5px;
+  margin: 4px;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
   padding: 8px;
   position: relative;
@@ -83,18 +114,29 @@ export default {
   &__delete-btn {
     position: absolute;
     right: 4px;
-    top: 4px;
+    top: 24px;
     cursor: pointer;
-    color: red;
     visibility: hidden;
+  }
+
+  &__merge-btn {
+    position: absolute;
+    top: 0px;
+    right: 2px;
+    width: 20px;
+    font-size: 20px;
+    height: 24px;
+    visibility: hidden;
+    cursor: pointer;
   }
 
   &__edit-btn {
     cursor: pointer;
-    visibility: visible;
+    visibility: hidden;
   }
 
   &:hover {
+    .card__merge-btn,
     .card__delete-btn,
     .card__edit-btn {
       visibility: visible;
@@ -112,6 +154,17 @@ export default {
     min-height: 24px;
     font-size: 16px;
     margin-right: 12px;
+
+    &--blur {
+      color: transparent;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  &__author {
+    span {
+      font-size: 18px;
+    }
   }
 
   &__input {

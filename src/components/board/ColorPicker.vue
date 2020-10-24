@@ -18,19 +18,12 @@
 </template>
 
 <script>
+import COLORS from "../../constants/colors";
 export default {
   props: ["color"],
   data() {
     return {
-      colors: [
-        "#68829E",
-        "#89DA59",
-        "#FF420E",
-        "#2C7873",
-        "#375E97",
-        "#F18D9E",
-        "#324851"
-      ]
+      colors: Object.values(COLORS)
     };
   },
   methods: {
@@ -48,8 +41,8 @@ export default {
 
   &__selected,
   &__option {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
   }
 
@@ -58,21 +51,22 @@ export default {
     top: 100%;
     left: 0;
     display: none;
-    width: 120px;
-    background: white;
+    width: 144px;
+    background: rgba(255, 255, 255);
     z-index: 99;
     padding: 8px;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.24), 0 1px 1px rgba(0, 0, 0, 0.48);
   }
 
   &__option {
     display: inline-block;
     margin: 4px;
     cursor: pointer;
-
+    border: 3px solid rgb(255, 255, 255);
+    transition: border 0.3s;
     &:hover,
     &--selected {
-      border: 1px solid black;
+      border: 0;
     }
   }
 

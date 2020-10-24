@@ -52,8 +52,8 @@ export default {
     return {
       valid: false,
       user: {
-        email: "test@test.com",
-        password: "123456"
+        email: "",
+        password: ""
       },
       rules: {
         emailRules: [

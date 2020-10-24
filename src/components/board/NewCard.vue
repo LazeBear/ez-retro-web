@@ -7,7 +7,7 @@
     <div class="card__editing" v-else>
       <TextArea class="card__input" v-model="text"></TextArea>
       <div class="card__footer">
-        <v-btn depressed color="success" @click="onCreate">
+        <v-btn outlined color="success" @click="onCreate">
           Create
         </v-btn>
 
@@ -31,6 +31,7 @@ export default {
   methods: {
     onCreate() {
       this.$emit("onSubmit", this.text);
+      this.showInput = false;
       this.text = "";
     },
     onCancel() {

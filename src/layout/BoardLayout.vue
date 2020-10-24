@@ -1,12 +1,12 @@
 <template>
-  <v-container :fluid="true">
+  <div>
     <NavBar />
-    <v-main>
+    <div class="content">
       <v-slide-y-transition mode="out-in">
         <slot />
       </v-slide-y-transition>
-    </v-main>
-  </v-container>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -19,4 +19,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.content {
+  padding-top: 65px;
+}
 </style>

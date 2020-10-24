@@ -1,5 +1,75 @@
 <template>
-  <div class="board">
+  <div class="board" v-if="board">
+    <div class="board__info">
+      <QuickEdit
+        :value="board.name"
+        @input="onUpdateBoard($event, 'name')"
+        v-if="isBoardOwner"
+        :classes="{ buttonOk: '', buttonCancel: '', wrapper: 'board__name' }"
+      >
+        <template v-slot:button-ok>
+          <v-btn outlined color="success">
+            Update
+          </v-btn>
+        </template>
+        <template v-slot:button-cancel>
+          <v-btn outlined color="error">
+            Cancel
+          </v-btn>
+        </template>
+      </QuickEdit>
+      <div class="board__name" v-else>{{ board.name }}</div>
+      <QuickEdit
+        v-if="isBoardOwner"
+        :value="board.description"
+        emptyText="Write a short description here..."
+        @input="onUpdateBoard($event, 'description')"
+        :classes="{
+          buttonOk: '',
+          buttonCancel: '',
+          wrapper: 'board__description'
+        }"
+        ><template v-slot:button-ok>
+          <v-btn outlined color="success">
+            Update
+          </v-btn>
+        </template>
+        <template v-slot:button-cancel>
+          <v-btn outlined color="error">
+            Cancel
+          </v-btn>
+        </template></QuickEdit
+      >
+      <div class="board__description" v-else>{{ board.description }}</div>
+
+      <v-btn
+        class="board__setting"
+        color="primary"
+        fab
+        small
+        v-if="isBoardOwner"
+        @click="showDrawer = !showDrawer"
+      >
+        <v-icon dark>
+          mdi-wrench
+        </v-icon>
+      </v-btn>
+      <v-navigation-drawer v-model="showDrawer" absolute right temporary>
+        <div class="drawer">
+          <v-switch
+            @change="onUpdateBoard($event, 'blurCard')"
+            :input-value="board.blurCard"
+            label="Blur card content"
+          ></v-switch>
+          <v-switch
+            @change="onUpdateBoard($event, 'allowVote')"
+            :input-value="board.allowVote"
+            label="Allow vote"
+          ></v-switch>
+        </div>
+      </v-navigation-drawer>
+    </div>
+
     <Container
       orientation="horizontal"
       @drop="onColumnDrop($event)"
@@ -33,16 +103,20 @@
             :drop-placeholder="dropPlaceholderOptions"
           >
             <Draggable
-              v-for="card in getOrderedCardList(list._id)"
+              v-for="(card, idx) in getOrderedCardList(list._id)"
               :key="card.id"
             >
               <Card
                 :style="{ backgroundColor: list.color }"
                 :card="card"
+                :blurCard="board.blurCard && card.userId !== user._id"
                 :isVoted="card.votes.includes(user._id)"
+                :allowVote="board.allowVote"
+                :showMergeBtn="idx !== 0"
                 @onDelete="deleteCard"
                 @onUpdate="updateCard"
                 @onVote="voteCard"
+                @onMerge="mergeCard(list._id, idx, idx - 1)"
               >
               </Card>
             </Draggable>
@@ -56,6 +130,7 @@
 <script>
 import { mapState, mapGetters, mapActions } from "vuex";
 import { Container, Draggable } from "vue-smooth-dnd";
+import QuickEdit from "vue-quick-edit";
 import NewCard from "../components/board/NewCard";
 import Card from "../components/board/Card";
 import ColorPicker from "../components/board/ColorPicker";
@@ -63,6 +138,7 @@ import ColorPicker from "../components/board/ColorPicker";
 export default {
   data() {
     return {
+      showDrawer: false,
       upperDropPlaceholderOptions: {
         className: "list-drop-preview",
         animationDuration: "150",
@@ -79,8 +155,11 @@ export default {
   },
   async mounted() {
     const { id } = this.$route.params;
-    const board = await this.fetchBoardById(id);
-    if (!board) {
+    let board;
+    try {
+      board = await this.fetchBoardById(id);
+    } catch (e) {
+      console.error(e);
       return this.$router.push("/boards");
     }
     this.fetchLists({ query: { boardId: board._id } });
@@ -94,6 +173,10 @@ export default {
       deleteCardById: "remove",
       updateCardById: "patch"
     }),
+    async onUpdateBoard(e, property) {
+      this.board[property] = e;
+      await this.board.save();
+    },
     changeListColor(listId, color) {
       this.updateListById([listId, { color }]);
     },
@@ -120,8 +203,23 @@ export default {
       }
       await card.save();
     },
-    async deleteCard(cardId) {
+    deleteCard(cardId) {
       this.deleteCardById(cardId);
+    },
+    async mergeCard(listId, sourceCardIndex, targetCardIndex) {
+      const list = this.getOrderedCardList(listId);
+      const sourceCard = list[sourceCardIndex];
+      const targetCard = list[targetCardIndex];
+      targetCard.text = `${targetCard.text}
+                          ------------
+                          ${sourceCard.text}`;
+      sourceCard.votes.forEach(i => {
+        if (!targetCard.votes.find(j => j === i)) {
+          targetCard.votes.push(i);
+        }
+      });
+      await targetCard.save();
+      await sourceCard.remove();
     },
     onColumnDrop(dropResult) {
       const { removedIndex, addedIndex } = dropResult;
@@ -188,15 +286,22 @@ export default {
     }
   },
   watch: {
-    lists(value) {
-      this.displayLists = value;
+    lists: {
+      immediate: true,
+      deep: true,
+      handler(value) {
+        this.displayLists = value || [];
+      }
     },
-    cards(value) {
-      this.displayCards = value;
+    cards: {
+      immediate: true,
+      deep: true,
+      handler(value) {
+        this.displayCards = value || [];
+      }
     }
   },
   computed: {
-    ...mapState("board", ["droppingList", "draggingCard"]),
     ...mapState("auth", ["user"]),
     ...mapState("boards", {
       loadingBoard: "isGetPending",
@@ -216,8 +321,12 @@ export default {
       findCardsInStore: "find",
       findCardInStore: "get"
     }),
+    isBoardOwner() {
+      return this.board.ownerId === this.user._id;
+    },
     board() {
-      return this.findBoardInStore(this.$route.params.id);
+      const board = this.findBoardInStore(this.$route.params.id);
+      return board;
     },
     lists() {
       return this.findListsInStore({
@@ -234,13 +343,59 @@ export default {
       }).data;
     }
   },
-  components: { Container, Draggable, NewCard, Card, ColorPicker }
+  components: { Container, Draggable, NewCard, Card, ColorPicker, QuickEdit }
 };
 </script>
 
 <style lang="scss" scoped>
+::v-deep .board {
+  &__name {
+    .vue-quick-edit__link {
+      color: black;
+      font-weight: 600;
+      font-size: 24px;
+      border: none;
+
+      &:hover {
+        border-bottom: 1px dashed #007ac0;
+      }
+    }
+  }
+
+  &__description {
+    input {
+      width: 400px;
+    }
+    .vue-quick-edit__link {
+      color: black;
+      border: none;
+
+      &:hover {
+        border-bottom: 1px dashed #007ac0;
+      }
+    }
+  }
+}
+
+.drawer {
+  margin: 8px;
+}
 .board {
   min-height: calc(100vh - 100px);
+
+  &__info {
+    margin: 8px;
+    display: flex;
+    align-items: baseline;
+  }
+  &__name {
+    font-weight: 600;
+    font-size: 24px;
+    margin-right: 8px;
+  }
+  &__setting {
+    margin-left: auto;
+  }
 
   &__container {
     display: flex;
@@ -248,7 +403,7 @@ export default {
     & > div.smooth-dnd-draggable-wrapper {
       flex: 1;
       min-width: 200px;
-      margin: 5px;
+      padding: 4px;
       display: flex;
       height: auto;
     }
@@ -264,7 +419,7 @@ export default {
   &__header {
     font-size: 20px;
     font-weight: 600;
-    margin: 0 5px;
+    margin: 0 4px;
     padding-right: 4px;
     display: flex;
     align-items: center;
