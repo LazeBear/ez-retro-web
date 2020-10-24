@@ -1,9 +1,8 @@
 <template>
   <v-container fluid fill-height>
     <v-layout column align-center>
-      <v-card max-width="320" class="pa-5">
+      <v-card max-width="320" class="pa-5" v-if="!loading">
         <v-form
-          v-if="!loading"
           v-model="valid"
           lazy-validation
           class="form"
