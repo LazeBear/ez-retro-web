@@ -33,7 +33,7 @@
       </div>
     </div>
     <div class="card__editing" v-else>
-      <TextArea class="card__input" v-model="text"></TextArea>
+      <TextArea class="card__input" v-model="text" ref="textarea"></TextArea>
       <div class="card__footer">
         <v-btn outlined color="success" @click="onUpdate">
           Update
@@ -94,6 +94,9 @@ export default {
     onEdit() {
       this.isEditing = true;
       this.text = this.card.text;
+      this.$nextTick(() => {
+        this.$refs.textarea.$el.focus();
+      });
     },
     onVote() {
       this.$emit("onVote", this.card._id);

@@ -85,7 +85,7 @@ export default {
           })
           .catch(e => {
             console.error("Authentication error", e);
-            this.$toasted.gloabl.error(e.message);
+            this.$toasted.global.error("Invalid password or email!");
           });
       }
     }

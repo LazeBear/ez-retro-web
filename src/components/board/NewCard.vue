@@ -1,11 +1,11 @@
 <template>
   <div class="card">
-    <div v-if="!showInput" class="card__button" @click="showInput = true">
+    <div v-if="!showInput" class="card__button" @click="onShowInput">
       <span class="mdi mdi-plus-thick"></span>
     </div>
 
     <div class="card__editing" v-else>
-      <TextArea class="card__input" v-model="text"></TextArea>
+      <TextArea class="card__input" v-model="text" ref="textarea"></TextArea>
       <div class="card__footer">
         <v-btn outlined color="success" @click="onCreate">
           Create
@@ -29,6 +29,12 @@ export default {
     };
   },
   methods: {
+    onShowInput() {
+      this.showInput = true;
+      this.$nextTick(() => {
+        this.$refs.textarea.$el.focus();
+      });
+    },
     onCreate() {
       this.$emit("onSubmit", this.text);
       this.showInput = false;

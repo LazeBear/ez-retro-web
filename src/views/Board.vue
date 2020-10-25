@@ -101,6 +101,7 @@
             drag-class="card__ghost"
             drop-class="card__ghost-drop"
             :drop-placeholder="dropPlaceholderOptions"
+            non-drag-area-selector=".card__editing"
           >
             <Draggable
               v-for="(card, idx) in getOrderedCardList(list._id)"
@@ -211,13 +212,14 @@ export default {
       const sourceCard = list[sourceCardIndex];
       const targetCard = list[targetCardIndex];
       targetCard.text = `${targetCard.text}
-                          ------------
-                          ${sourceCard.text}`;
+------------
+${sourceCard.text}`;
       sourceCard.votes.forEach(i => {
         if (!targetCard.votes.find(j => j === i)) {
           targetCard.votes.push(i);
         }
       });
+      this.removeCard(sourceCard._id);
       await targetCard.save();
       await sourceCard.remove();
     },
@@ -283,6 +285,13 @@ export default {
       const card = this.displayCards.find(i => i._id === cardId);
       card.listId = listId;
       card.order = order;
+    },
+    // locally
+    removeCard(cardId) {
+      const index = this.displayCards.findIndex(i => i._id === cardId);
+      if (index !== -1) {
+        this.displayCards.splice(index, 1);
+      }
     }
   },
   watch: {
