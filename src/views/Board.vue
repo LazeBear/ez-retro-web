@@ -66,6 +66,17 @@
             :input-value="board.allowVote"
             label="Allow vote"
           ></v-switch>
+          <div class="drawer__row" v-if="board.allowVote">
+            No. of votes:
+            <VueNumberInput
+              :value="board.maxVote"
+              @change="onUpdateBoard($event, 'maxVote')"
+              :min="1"
+              :max="9"
+              controls
+            ></VueNumberInput>
+          </div>
+          <div class="drawer__divider"></div>
           <v-btn block text @click="exportAs('md')">Export as MarkDown</v-btn>
         </div>
       </v-navigation-drawer>
@@ -132,6 +143,7 @@
 <script>
 import { mapState, mapGetters, mapActions } from "vuex";
 import { Container, Draggable } from "vue-smooth-dnd";
+import VueNumberInput from "@chenfengyuan/vue-number-input";
 import json2md from "json2md";
 import { saveAs } from "file-saver";
 import QuickEdit from "vue-quick-edit";
@@ -171,7 +183,10 @@ export default {
   },
   methods: {
     ...mapActions("boards", { fetchBoardById: "get" }),
-    ...mapActions("lists", { fetchLists: "find", updateListById: "patch" }),
+    ...mapActions("lists", {
+      fetchLists: "find",
+      updateListById: "patch"
+    }),
     ...mapActions("cards", {
       fetchCards: "find",
       deleteCardById: "remove",
@@ -221,12 +236,30 @@ export default {
       this.updateCardById([cardId, { text }]);
     },
     async voteCard(cardId) {
-      const card = this.findCardInStore(cardId);
+      const { allowVote, maxVote } = this.board;
+      if (!allowVote) {
+        return;
+      }
+
       const { _id: userId } = this.user;
+      let voteCount = 0;
+      this.cards.forEach(i => {
+        if (i.votes.includes(userId)) {
+          voteCount++;
+        }
+      });
+
+      const card = this.findCardInStore(cardId);
       const index = card.votes.findIndex(i => i === userId);
       if (index !== -1) {
         card.votes.splice(index, 1);
       } else {
+        const leftVote = maxVote - voteCount;
+        if (leftVote <= 0) {
+          this.$toasted.error("0 vote remaining!");
+          return;
+        }
+        this.$toasted.info(`${leftVote - 1} vote(s) remaining!`);
         card.votes.push(userId);
       }
       await card.save();
@@ -379,7 +412,15 @@ ${sourceCard.text}`;
       }).data;
     }
   },
-  components: { Container, Draggable, NewCard, Card, ColorPicker, QuickEdit }
+  components: {
+    Container,
+    Draggable,
+    NewCard,
+    Card,
+    ColorPicker,
+    QuickEdit,
+    VueNumberInput
+  }
 };
 </script>
 
@@ -415,6 +456,16 @@ ${sourceCard.text}`;
 
 .drawer {
   margin: 8px;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__divider {
+    height: 48px;
+  }
 }
 .board {
   min-height: calc(100vh - 100px);

@@ -1,0 +1,35 @@
+- [x] allow login and sign up
+- [ ] styled welcome page
+- [ ] allow edit personal profile
+  - [ ] add avatar icon
+  - [ ] add personal page
+- [ ] team board feature
+- [ ] public board feature
+  - [ ] board
+    - [x] create and delete board
+    - [x] display board name
+    - [x] edit board name (board owner)
+    - [x] display board description
+    - [x] edit board description (board owner)
+    - [x] allow drag and drop
+    - [x] allow merge
+    - [ ] vote
+      - [x] show vote on card
+      - [x] allow vote and cancel vote
+      - [ ] limit number of vote per user
+    - [x] allow blur card content
+    - [x] export board data
+  - [ ] list
+    - [ ] add new list
+    - [ ] delete list
+    - [x] change list color
+    - [x] display list name
+    - [ ] edit list name
+    - [x] display list description
+    - [ ] edit list description
+  - [ ] card
+    - [x] add new card
+    - [x] delete card
+    - [ ] restrict edit permission
+    - [x] show card author
+    - [x] allow delete card
