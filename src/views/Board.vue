@@ -66,6 +66,7 @@
             :input-value="board.allowVote"
             label="Allow vote"
           ></v-switch>
+          <v-btn block text @click="exportAs('md')">Export as MarkDown</v-btn>
         </div>
       </v-navigation-drawer>
     </div>
@@ -131,6 +132,8 @@
 <script>
 import { mapState, mapGetters, mapActions } from "vuex";
 import { Container, Draggable } from "vue-smooth-dnd";
+import json2md from "json2md";
+import { saveAs } from "file-saver";
 import QuickEdit from "vue-quick-edit";
 import NewCard from "../components/board/NewCard";
 import Card from "../components/board/Card";
@@ -174,6 +177,30 @@ export default {
       deleteCardById: "remove",
       updateCardById: "patch"
     }),
+    exportAs(type) {
+      const { name: boardName, description: boardDescription } = this.board;
+      if (type === "md") {
+        const md = [{ h1: boardName }, { p: boardDescription }];
+        this.displayLists.forEach(list => {
+          const { _id, name } = list;
+          md.push({ h2: name });
+          const cards = this.getOrderedCardList(_id);
+          const ul = [];
+          cards.forEach(card => {
+            const { text, votes } = card;
+            let li = text;
+            if (votes.length) {
+              li += `(${votes.length} votes)`;
+            }
+            ul.push(li);
+          });
+          md.push({ ul });
+        });
+        const data = json2md(md);
+        const blob = new Blob([data], { type: "text/plain;charset=utf-8" });
+        saveAs(blob, `${boardName}.md`);
+      }
+    },
     async onUpdateBoard(e, property) {
       this.board[property] = e;
       await this.board.save();
