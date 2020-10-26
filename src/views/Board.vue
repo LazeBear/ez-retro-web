@@ -54,7 +54,13 @@
           mdi-wrench
         </v-icon>
       </v-btn>
-      <v-navigation-drawer v-model="showDrawer" absolute right temporary>
+      <v-navigation-drawer
+        v-model="showDrawer"
+        absolute
+        right
+        temporary
+        v-if="isBoardOwner"
+      >
         <div class="drawer">
           <v-switch
             @change="onUpdateBoard($event, 'blurCard')"
@@ -119,6 +125,7 @@
                 </v-btn>
               </template></QuickEdit
             >
+            <div class="list__name" v-else>{{ list.name }}</div>
           </div>
           <NewCard
             @onSubmit="addCard(list._id, $event)"
