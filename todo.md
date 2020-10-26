@@ -16,7 +16,7 @@
     - [ ] vote
       - [x] show vote on card
       - [x] allow vote and cancel vote
-      - [ ] limit number of vote per user
+      - [x] limit number of vote per user
     - [x] allow blur card content
     - [x] export board data
   - [ ] list
@@ -24,9 +24,7 @@
     - [ ] delete list
     - [x] change list color
     - [x] display list name
-    - [ ] edit list name
-    - [x] display list description
-    - [ ] edit list description
+    - [x] edit list name
   - [ ] card
     - [x] add new card
     - [x] delete card

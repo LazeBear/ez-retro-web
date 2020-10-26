@@ -99,7 +99,26 @@
               :color="list.color"
               @onSelectColor="changeListColor(list._id, $event)"
             ></ColorPicker>
-            {{ list.name }}
+            <QuickEdit
+              v-if="isBoardOwner"
+              :value="list.name"
+              @input="onUpdateListName($event, list)"
+              :classes="{
+                buttonOk: '',
+                buttonCancel: '',
+                wrapper: 'list__name'
+              }"
+              ><template v-slot:button-ok>
+                <v-btn outlined color="success">
+                  Update
+                </v-btn>
+              </template>
+              <template v-slot:button-cancel>
+                <v-btn outlined color="error">
+                  Cancel
+                </v-btn>
+              </template></QuickEdit
+            >
           </div>
           <NewCard
             @onSubmit="addCard(list._id, $event)"
@@ -215,6 +234,10 @@ export default {
         const blob = new Blob([data], { type: "text/plain;charset=utf-8" });
         saveAs(blob, `${boardName}.md`);
       }
+    },
+    async onUpdateListName(e, list) {
+      list.name = e;
+      await list.save();
     },
     async onUpdateBoard(e, property) {
       this.board[property] = e;
@@ -425,30 +448,39 @@ ${sourceCard.text}`;
 </script>
 
 <style lang="scss" scoped>
-::v-deep .board {
-  &__name {
-    .vue-quick-edit__link {
-      color: black;
-      font-weight: 600;
-      font-size: 24px;
-      border: none;
+::v-deep {
+  .vue-quick-edit__input {
+    padding-left: 8px !important;
+  }
+  .vue-quick-edit__link {
+    color: black;
+    border: none;
+    outline: none;
 
-      &:hover {
-        border-bottom: 1px dashed #007ac0;
+    &:hover {
+      border-bottom: 1px dashed #007ac0;
+    }
+  }
+  .board {
+    &__name {
+      .vue-quick-edit__link {
+        font-weight: 600;
+        font-size: 24px;
+      }
+    }
+
+    &__description {
+      input {
+        width: 400px;
       }
     }
   }
 
-  &__description {
-    input {
-      width: 400px;
-    }
-    .vue-quick-edit__link {
-      color: black;
-      border: none;
-
-      &:hover {
-        border-bottom: 1px dashed #007ac0;
+  .list {
+    &__name {
+      input {
+        width: 90%;
+        margin-bottom: 4px;
       }
     }
   }
