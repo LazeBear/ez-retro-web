@@ -1,11 +1,11 @@
 <template>
   <div class="card">
     <div class="card__display" v-if="!isEditing">
-      <div class="card__merge-btn" v-if="showMergeBtn" @click="onMerge">
-        <span class="mdi mdi-call-merge"></span>
+      <div class="card__merge-btn" v-if="showMergeBtn">
+        <MergeButton @onConfirm="onMerge"></MergeButton>
       </div>
-      <div class="card__delete-btn" @click="onDelete">
-        <span class="mdi mdi-delete"></span>
+      <div class="card__delete-btn">
+        <DeleteButton @onConfirm="onDelete"></DeleteButton>
       </div>
       <div class="card__text" :class="{ 'card__text--blur': blurCard }">
         {{ displayText }}
@@ -60,6 +60,8 @@ function randomLetters(length) {
   return rdmString.substr(0, length);
 }
 import TextArea from "./TextArea";
+import DeleteButton from "./DeleteButton";
+import MergeButton from "./MergeButton";
 export default {
   props: ["card", "isVoted", "blurCard", "allowVote", "showMergeBtn"],
   data() {
@@ -102,7 +104,7 @@ export default {
       this.$emit("onVote", this.card._id);
     }
   },
-  components: { TextArea }
+  components: { TextArea, DeleteButton, MergeButton }
 };
 </script>
 
