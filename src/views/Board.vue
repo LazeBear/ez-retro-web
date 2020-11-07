@@ -281,10 +281,11 @@ export default {
 
       const card = this.findCardInStore(cardId);
       const index = card.votes.findIndex(i => i === userId);
+      const leftVote = maxVote - voteCount;
       if (index !== -1) {
         card.votes.splice(index, 1);
+        this.$toasted.info(`${leftVote + 1} vote(s) remaining!`);
       } else {
-        const leftVote = maxVote - voteCount;
         if (leftVote <= 0) {
           this.$toasted.error("0 vote remaining!");
           return;
@@ -302,7 +303,7 @@ export default {
       const sourceCard = list[sourceCardIndex];
       const targetCard = list[targetCardIndex];
       targetCard.text = `${targetCard.text}
-------------
+~~~~~~~~~~~~
 ${sourceCard.text}`;
       sourceCard.votes.forEach(i => {
         if (!targetCard.votes.find(j => j === i)) {
