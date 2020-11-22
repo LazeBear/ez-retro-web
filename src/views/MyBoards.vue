@@ -75,7 +75,7 @@ export default {
         boardId: board._id,
         name: "Went well",
         order: 1,
-        color: COLORS.GREEN_2
+        color: COLORS.BLACK_2
       }).save();
       await new List({
         boardId: board._id,
@@ -87,7 +87,7 @@ export default {
         boardId: board._id,
         name: "Actions",
         order: 3,
-        color: COLORS.RED_4
+        color: COLORS.RED_2
       }).save();
       this.$router.push(`/boards/${board._id}`);
     }

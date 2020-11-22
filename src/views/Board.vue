@@ -41,19 +41,33 @@
         </template></QuickEdit
       >
       <div class="board__description" v-else>{{ board.description }}</div>
+      <div class="board__options">
+        <v-btn
+          class="board__share-btn"
+          color="primary"
+          fab
+          small
+          outlined
+          @click="shareBoard"
+        >
+          <v-icon dark>
+            mdi-share-variant
+          </v-icon>
+        </v-btn>
+        <v-btn
+          class="board__setting"
+          color="primary"
+          fab
+          small
+          v-if="isBoardOwner"
+          @click="showDrawer = !showDrawer"
+        >
+          <v-icon dark>
+            mdi-wrench
+          </v-icon>
+        </v-btn>
+      </div>
 
-      <v-btn
-        class="board__setting"
-        color="primary"
-        fab
-        small
-        v-if="isBoardOwner"
-        @click="showDrawer = !showDrawer"
-      >
-        <v-icon dark>
-          mdi-wrench
-        </v-icon>
-      </v-btn>
       <v-navigation-drawer
         v-model="showDrawer"
         absolute
@@ -83,6 +97,12 @@
             ></VueNumberInput>
           </div>
           <div class="drawer__divider"></div>
+          <AddNewColumnButton @onAddColumn="addColumn($event)" />
+          <DeleteColumnButton
+            :lists="displayLists"
+            @onDeleteColumn="deleteColumn($event)"
+          ></DeleteColumnButton>
+          <div class="drawer__divider"></div>
           <v-btn block text @click="exportAs('md')">Export as MarkDown</v-btn>
         </div>
       </v-navigation-drawer>
@@ -97,7 +117,13 @@
     >
       <Draggable v-for="list in displayLists" :key="list._id">
         <div class="list">
-          <span class="list__drag-handle"
+          <span
+            class="list__sort-button"
+            v-if="isBoardOwner"
+            @click="sortList(list._id)"
+            ><span class="mdi mdi-sort-numeric-descending"></span>
+          </span>
+          <span class="list__drag-handle" v-if="isBoardOwner"
             ><span class="mdi mdi-cursor-move"></span>
           </span>
           <div class="list__header">
@@ -176,6 +202,8 @@ import QuickEdit from "vue-quick-edit";
 import NewCard from "../components/board/NewCard";
 import Card from "../components/board/Card";
 import ColorPicker from "../components/board/ColorPicker";
+import AddNewColumnButton from "../components/board/AddNewColumnButton";
+import DeleteColumnButton from "../components/board/DeleteColumnButton";
 
 export default {
   data() {
@@ -211,13 +239,36 @@ export default {
     ...mapActions("boards", { fetchBoardById: "get" }),
     ...mapActions("lists", {
       fetchLists: "find",
-      updateListById: "patch"
+      updateListById: "patch",
+      deleteListById: "remove"
     }),
     ...mapActions("cards", {
       fetchCards: "find",
       deleteCardById: "remove",
       updateCardById: "patch"
     }),
+    shareBoard() {
+      if (!window.getSelection) {
+        this.$toasted.error("Please copy the URL from the address bar.");
+        return;
+      }
+      const dummy = document.createElement("p");
+      dummy.textContent = window.location.href;
+      document.body.appendChild(dummy);
+
+      const range = document.createRange();
+      range.setStartBefore(dummy);
+      range.setEndAfter(dummy);
+
+      const selection = window.getSelection();
+      // First clear, in case the user already selected some other text
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
+      this.$toasted.info("Board URL copied!");
+    },
     exportAs(type) {
       const { name: boardName, description: boardDescription } = this.board;
       if (type === "md") {
@@ -228,10 +279,11 @@ export default {
           const cards = this.getOrderedCardList(_id);
           const ul = [];
           cards.forEach(card => {
-            const { text, votes } = card;
-            let li = text;
+            const { text, votes, user } = card;
+            let li = `> ${text}`;
+            li += `\n> user: ${user.displayName || user.email}`;
             if (votes.length) {
-              li += `(${votes.length} votes)`;
+              li += `\n> ${votes.length} vote(s) `;
             }
             ul.push(li);
           });
@@ -241,6 +293,40 @@ export default {
         const blob = new Blob([data], { type: "text/plain;charset=utf-8" });
         saveAs(blob, `${boardName}.md`);
       }
+    },
+    sortList(listId) {
+      const array = this.getOrderedCardList(listId)
+        .sort((a, b) => (a.votes.length < b.votes.length ? 1 : -1))
+        .map(i => ({
+          id: i._id,
+          order: i.order
+        }));
+
+      for (let index = 0; index < array.length; index++) {
+        const { id, order } = array[index];
+        if (order !== index) {
+          this.updateCardById([id, { order: index }]);
+          this.updateDisplayCardsOrder(listId, id, index);
+        }
+      }
+    },
+    async addColumn({ name, color }) {
+      const { List } = this.$FeathersVuex.api;
+      await new List({
+        boardId: this.board._id,
+        name: name,
+        order: this.displayLists.length + 1,
+        color: color
+      }).save();
+      this.showDrawer = false;
+    },
+    async deleteColumn({ id }) {
+      const cards = this.getOrderedCardList(id);
+      cards.forEach(({ _id }) => {
+        this.deleteCard(_id);
+      });
+      this.deleteListById(id);
+      this.showDrawer = false;
     },
     async onUpdateListName(e, list) {
       list.name = e;
@@ -303,7 +389,7 @@ export default {
       const sourceCard = list[sourceCardIndex];
       const targetCard = list[targetCardIndex];
       targetCard.text = `${targetCard.text}
-~~~~~~~~~~~~
+=========
 ${sourceCard.text}`;
       sourceCard.votes.forEach(i => {
         if (!targetCard.votes.find(j => j === i)) {
@@ -450,7 +536,9 @@ ${sourceCard.text}`;
     Card,
     ColorPicker,
     QuickEdit,
-    VueNumberInput
+    VueNumberInput,
+    AddNewColumnButton,
+    DeleteColumnButton
   }
 };
 </script>
@@ -520,12 +608,17 @@ ${sourceCard.text}`;
     font-size: 24px;
     margin-right: 8px;
   }
-  &__setting {
+  &__options {
     margin-left: auto;
+
+    button {
+      margin: 0 4px;
+    }
   }
 
   &__container {
     display: flex !important;
+    overflow-x: scroll;
 
     & > div.smooth-dnd-draggable-wrapper {
       flex: 1;
@@ -533,6 +626,7 @@ ${sourceCard.text}`;
       padding: 4px;
       display: flex;
       height: auto;
+      min-height: 300px;
     }
   }
 }
@@ -556,6 +650,15 @@ ${sourceCard.text}`;
     }
   }
 
+  &__sort-button {
+    cursor: pointer;
+    position: absolute;
+    padding: 5px;
+    top: 0;
+    right: 20px;
+    visibility: hidden;
+  }
+
   &__drag-handle {
     cursor: move;
     padding: 5px;
@@ -566,7 +669,8 @@ ${sourceCard.text}`;
   }
 
   &:hover {
-    .list__drag-handle {
+    .list__drag-handle,
+    .list__sort-button {
       visibility: visible;
     }
   }
