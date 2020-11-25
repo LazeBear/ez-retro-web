@@ -277,17 +277,18 @@ export default {
           const { _id, name } = list;
           md.push({ h2: name });
           const cards = this.getOrderedCardList(_id);
-          const ul = [];
           cards.forEach(card => {
             const { text, votes, user } = card;
-            let li = `> ${text}`;
-            li += `\n> user: ${user.displayName || user.email}`;
+            let blockquote = `${text.replaceAll(
+              "------------------",
+              "\\------------------"
+            )}`;
+            blockquote += `  \nuser: ${user.displayName || user.email}`;
             if (votes.length) {
-              li += `\n> ${votes.length} vote(s) `;
+              blockquote += `  \n${votes.length} vote(s) `;
             }
-            ul.push(li);
+            md.push({ blockquote });
           });
-          md.push({ ul });
         });
         const data = json2md(md);
         const blob = new Blob([data], { type: "text/plain;charset=utf-8" });
@@ -388,9 +389,7 @@ export default {
       const list = this.getOrderedCardList(listId);
       const sourceCard = list[sourceCardIndex];
       const targetCard = list[targetCardIndex];
-      targetCard.text = `${targetCard.text}
-=========
-${sourceCard.text}`;
+      targetCard.text = `${targetCard.text}  \n------------------  \n${sourceCard.text}`;
       sourceCard.votes.forEach(i => {
         if (!targetCard.votes.find(j => j === i)) {
           targetCard.votes.push(i);

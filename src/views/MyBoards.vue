@@ -100,7 +100,9 @@ export default {
     }),
     ...mapGetters("boards", { findBoardsInStore: "find" }),
     boards() {
-      return this.findBoardsInStore().data.sort((a, b) => {
+      return this.findBoardsInStore({
+        query: { ownerId: this.user.user._id }
+      }).data.sort((a, b) => {
         return new Date(a.createdAt).getTime() < new Date(b.createdAt).getTime()
           ? 1
           : -1;
