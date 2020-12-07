@@ -84,6 +84,11 @@
               controls
             ></VueNumberInput>
           </div>
+          <v-switch
+            @change="onUpdateBoard($event, 'authorOnly')"
+            :input-value="board.authorOnly"
+            label="Only author and board owner can edit"
+          ></v-switch>
           <div class="drawer__divider"></div>
           <AddNewColumnButton @onAddColumn="addColumn($event)" />
           <DeleteColumnButton
@@ -162,6 +167,11 @@
                   :blurCard="board.blurCard && card.userId !== user._id"
                   :isVoted="card.votes.includes(user._id)"
                   :allowVote="board.allowVote"
+                  :allowEdit="
+                    !board.authorOnly ||
+                    isBoardOwner ||
+                    card.userId === user._id
+                  "
                   :showMergeBtn="idx !== 0"
                   @onDelete="deleteCard"
                   @onUpdate="updateCard"

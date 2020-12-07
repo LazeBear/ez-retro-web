@@ -1,10 +1,10 @@
 <template>
   <div class="card">
     <div class="card__display" v-if="!isEditing">
-      <div class="card__merge-btn" v-if="showMergeBtn">
+      <div class="card__merge-btn" v-if="showMergeBtn && allowEdit">
         <MergeButton @onConfirm="onMerge"></MergeButton>
       </div>
-      <div class="card__delete-btn">
+      <div class="card__delete-btn" v-if="allowEdit">
         <DeleteButton @onConfirm="onDelete"></DeleteButton>
       </div>
       <div class="card__text" :class="{ 'card__text--blur': blurCard }">
@@ -15,8 +15,8 @@
         {{ card.user.displayName || card.user.email }}
       </div>
       <div class="card__footer">
-        <div class="card__edit-btn" @click="onEdit">
-          <span class="mdi mdi-pencil"></span>
+        <div class="card__edit-btn">
+          <span class="mdi mdi-pencil" @click="onEdit" v-if="allowEdit"></span>
         </div>
 
         <div class="card__vote" v-if="allowVote">
@@ -35,13 +35,9 @@
     <div class="card__editing" v-else>
       <TextArea class="card__input" v-model="text" ref="textarea"></TextArea>
       <div class="card__footer">
-        <v-btn outlined color="success" @click="onUpdate">
-          Update
-        </v-btn>
+        <v-btn outlined color="success" @click="onUpdate"> Update </v-btn>
 
-        <v-btn outlined color="error" @click="onCancel">
-          Cancel
-        </v-btn>
+        <v-btn outlined color="error" @click="onCancel"> Cancel </v-btn>
       </div>
     </div>
   </div>
@@ -53,9 +49,7 @@ function randomLetters(length) {
   for (
     ;
     rdmString.length < length;
-    rdmString += Math.random()
-      .toString(36)
-      .substr(2)
+    rdmString += Math.random().toString(36).substr(2)
   );
   return rdmString.substr(0, length);
 }
@@ -63,11 +57,18 @@ import TextArea from "./TextArea";
 import DeleteButton from "./DeleteButton";
 import MergeButton from "./MergeButton";
 export default {
-  props: ["card", "isVoted", "blurCard", "allowVote", "showMergeBtn"],
+  props: [
+    "card",
+    "isVoted",
+    "blurCard",
+    "allowVote",
+    "allowEdit",
+    "showMergeBtn",
+  ],
   data() {
     return {
       text: "",
-      isEditing: false
+      isEditing: false,
     };
   },
   computed: {
@@ -75,7 +76,7 @@ export default {
       return this.blurCard
         ? randomLetters(this.card.text.length)
         : this.card.text;
-    }
+    },
   },
   methods: {
     onUpdate() {
@@ -102,9 +103,9 @@ export default {
     },
     onVote() {
       this.$emit("onVote", this.card._id);
-    }
+    },
   },
-  components: { TextArea, DeleteButton, MergeButton }
+  components: { TextArea, DeleteButton, MergeButton },
 };
 </script>
 
