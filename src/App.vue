@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <FeedbackButton />
     <component :is="this.$route.meta.layout || 'div'">
       <router-view />
     </component>
@@ -7,14 +8,15 @@
 </template>
 
 <script>
+import FeedbackButton from "./components/FeedbackButton";
 export default {
   name: "App",
 
-  components: {},
+  components: { FeedbackButton },
 
   data: () => ({
     //
-  })
+  }),
 };
 </script>
 
