@@ -4,9 +4,12 @@ import router from './router';
 import store from './store';
 import vuetify from './plugins/vuetify';
 import Toasted from 'vue-toasted';
+import PerfectScrollbar from 'vue2-perfect-scrollbar';
+import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css';
 
 Vue.config.productionTip = false;
 
+Vue.use(PerfectScrollbar);
 Vue.use(Toasted, {
   position: 'top-center',
   duration: 5000,

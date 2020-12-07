@@ -8,14 +8,10 @@
         :classes="{ buttonOk: '', buttonCancel: '', wrapper: 'board__name' }"
       >
         <template v-slot:button-ok>
-          <v-btn outlined color="success">
-            Update
-          </v-btn>
+          <v-btn outlined color="success"> Update </v-btn>
         </template>
         <template v-slot:button-cancel>
-          <v-btn outlined color="error">
-            Cancel
-          </v-btn>
+          <v-btn outlined color="error"> Cancel </v-btn>
         </template>
       </QuickEdit>
       <div class="board__name" v-else>{{ board.name }}</div>
@@ -27,17 +23,13 @@
         :classes="{
           buttonOk: '',
           buttonCancel: '',
-          wrapper: 'board__description'
+          wrapper: 'board__description',
         }"
         ><template v-slot:button-ok>
-          <v-btn outlined color="success">
-            Update
-          </v-btn>
+          <v-btn outlined color="success"> Update </v-btn>
         </template>
         <template v-slot:button-cancel>
-          <v-btn outlined color="error">
-            Cancel
-          </v-btn>
+          <v-btn outlined color="error"> Cancel </v-btn>
         </template></QuickEdit
       >
       <div class="board__description" v-else>{{ board.description }}</div>
@@ -50,9 +42,7 @@
           outlined
           @click="shareBoard"
         >
-          <v-icon dark>
-            mdi-share-variant
-          </v-icon>
+          <v-icon dark> mdi-share-variant </v-icon>
         </v-btn>
         <v-btn
           class="board__setting"
@@ -62,9 +52,7 @@
           v-if="isBoardOwner"
           @click="showDrawer = !showDrawer"
         >
-          <v-icon dark>
-            mdi-wrench
-          </v-icon>
+          <v-icon dark> mdi-wrench </v-icon>
         </v-btn>
       </div>
 
@@ -108,87 +96,85 @@
       </v-navigation-drawer>
     </div>
 
-    <Container
-      orientation="horizontal"
-      @drop="onColumnDrop($event)"
-      drag-handle-selector=".list__drag-handle"
-      :drop-placeholder="upperDropPlaceholderOptions"
-      class="board__container"
-    >
-      <Draggable v-for="list in displayLists" :key="list._id">
-        <div class="list">
-          <span
-            class="list__sort-button"
-            v-if="isBoardOwner"
-            @click="sortList(list._id)"
-            ><span class="mdi mdi-sort-numeric-descending"></span>
-          </span>
-          <span class="list__drag-handle" v-if="isBoardOwner"
-            ><span class="mdi mdi-cursor-move"></span>
-          </span>
-          <div class="list__header">
-            <ColorPicker
-              :color="list.color"
-              @onSelectColor="changeListColor(list._id, $event)"
-            ></ColorPicker>
-            <QuickEdit
+    <perfect-scrollbar>
+      <Container
+        orientation="horizontal"
+        @drop="onColumnDrop($event)"
+        drag-handle-selector=".list__drag-handle"
+        :drop-placeholder="upperDropPlaceholderOptions"
+        class="board__container"
+      >
+        <Draggable v-for="list in displayLists" :key="list._id">
+          <div class="list">
+            <span
+              class="list__sort-button"
               v-if="isBoardOwner"
-              :value="list.name"
-              @input="onUpdateListName($event, list)"
-              :classes="{
-                buttonOk: '',
-                buttonCancel: '',
-                wrapper: 'list__name'
-              }"
-              ><template v-slot:button-ok>
-                <v-btn outlined color="success">
-                  Update
-                </v-btn>
-              </template>
-              <template v-slot:button-cancel>
-                <v-btn outlined color="error">
-                  Cancel
-                </v-btn>
-              </template></QuickEdit
-            >
-            <div class="list__name" v-else>{{ list.name }}</div>
-          </div>
-          <NewCard
-            @onSubmit="addCard(list._id, $event)"
-            :style="{ backgroundColor: list.color }"
-          ></NewCard>
-          <Container
-            class="list__cards"
-            group-name="col"
-            @drop="e => onCardDrop(list._id, e)"
-            :get-child-payload="getCardPayload(list._id)"
-            drag-class="card__ghost"
-            drop-class="card__ghost-drop"
-            :drop-placeholder="dropPlaceholderOptions"
-            non-drag-area-selector=".card__editing"
-          >
-            <Draggable
-              v-for="(card, idx) in getOrderedCardList(list._id)"
-              :key="card.id"
-            >
-              <Card
-                :style="{ backgroundColor: list.color }"
-                :card="card"
-                :blurCard="board.blurCard && card.userId !== user._id"
-                :isVoted="card.votes.includes(user._id)"
-                :allowVote="board.allowVote"
-                :showMergeBtn="idx !== 0"
-                @onDelete="deleteCard"
-                @onUpdate="updateCard"
-                @onVote="voteCard"
-                @onMerge="mergeCard(list._id, idx, idx - 1)"
+              @click="sortList(list._id)"
+              ><span class="mdi mdi-sort-numeric-descending"></span>
+            </span>
+            <span class="list__drag-handle" v-if="isBoardOwner"
+              ><span class="mdi mdi-cursor-move"></span>
+            </span>
+            <div class="list__header">
+              <ColorPicker
+                :color="list.color"
+                @onSelectColor="changeListColor(list._id, $event)"
+              ></ColorPicker>
+              <QuickEdit
+                v-if="isBoardOwner"
+                :value="list.name"
+                @input="onUpdateListName($event, list)"
+                :classes="{
+                  buttonOk: '',
+                  buttonCancel: '',
+                  wrapper: 'list__name',
+                }"
+                ><template v-slot:button-ok>
+                  <v-btn outlined color="success"> Update </v-btn>
+                </template>
+                <template v-slot:button-cancel>
+                  <v-btn outlined color="error"> Cancel </v-btn>
+                </template></QuickEdit
               >
-              </Card>
-            </Draggable>
-          </Container>
-        </div>
-      </Draggable>
-    </Container>
+              <div class="list__name" v-else>{{ list.name }}</div>
+            </div>
+            <NewCard
+              @onSubmit="addCard(list._id, $event)"
+              :style="{ backgroundColor: list.color }"
+            ></NewCard>
+            <Container
+              class="list__cards"
+              group-name="col"
+              @drop="(e) => onCardDrop(list._id, e)"
+              :get-child-payload="getCardPayload(list._id)"
+              drag-class="card__ghost"
+              drop-class="card__ghost-drop"
+              :drop-placeholder="dropPlaceholderOptions"
+              non-drag-area-selector=".card__editing"
+            >
+              <Draggable
+                v-for="(card, idx) in getOrderedCardList(list._id)"
+                :key="card.id"
+              >
+                <Card
+                  :style="{ backgroundColor: list.color }"
+                  :card="card"
+                  :blurCard="board.blurCard && card.userId !== user._id"
+                  :isVoted="card.votes.includes(user._id)"
+                  :allowVote="board.allowVote"
+                  :showMergeBtn="idx !== 0"
+                  @onDelete="deleteCard"
+                  @onUpdate="updateCard"
+                  @onVote="voteCard"
+                  @onMerge="mergeCard(list._id, idx, idx - 1)"
+                >
+                </Card>
+              </Draggable>
+            </Container>
+          </div>
+        </Draggable>
+      </Container>
+    </perfect-scrollbar>
   </div>
 </template>
 
@@ -212,15 +198,15 @@ export default {
       upperDropPlaceholderOptions: {
         className: "list-drop-preview",
         animationDuration: "150",
-        showOnTop: true
+        showOnTop: true,
       },
       dropPlaceholderOptions: {
         className: "card-drop-preview",
         animationDuration: "150",
-        showOnTop: true
+        showOnTop: true,
       },
       displayLists: [], // to avoid async update flash
-      displayCards: []
+      displayCards: [],
     };
   },
   async mounted() {
@@ -240,12 +226,12 @@ export default {
     ...mapActions("lists", {
       fetchLists: "find",
       updateListById: "patch",
-      deleteListById: "remove"
+      deleteListById: "remove",
     }),
     ...mapActions("cards", {
       fetchCards: "find",
       deleteCardById: "remove",
-      updateCardById: "patch"
+      updateCardById: "patch",
     }),
     shareBoard() {
       if (!window.getSelection) {
@@ -273,11 +259,11 @@ export default {
       const { name: boardName, description: boardDescription } = this.board;
       if (type === "md") {
         const md = [{ h1: boardName }, { p: boardDescription }];
-        this.displayLists.forEach(list => {
+        this.displayLists.forEach((list) => {
           const { _id, name } = list;
           md.push({ h2: name });
           const cards = this.getOrderedCardList(_id);
-          cards.forEach(card => {
+          cards.forEach((card) => {
             const { text, votes, user } = card;
             let blockquote = `${text.replaceAll(
               "------------------",
@@ -298,9 +284,9 @@ export default {
     sortList(listId) {
       const array = this.getOrderedCardList(listId)
         .sort((a, b) => (a.votes.length < b.votes.length ? 1 : -1))
-        .map(i => ({
+        .map((i) => ({
           id: i._id,
-          order: i.order
+          order: i.order,
         }));
 
       for (let index = 0; index < array.length; index++) {
@@ -317,7 +303,7 @@ export default {
         boardId: this.board._id,
         name: name,
         order: this.displayLists.length + 1,
-        color: color
+        color: color,
       }).save();
       this.showDrawer = false;
     },
@@ -346,7 +332,7 @@ export default {
         text,
         listId,
         boardId: this.board._id,
-        order: this.getListLength(listId)
+        order: this.getListLength(listId),
       }).save();
     },
     updateCard({ cardId, text }) {
@@ -360,14 +346,14 @@ export default {
 
       const { _id: userId } = this.user;
       let voteCount = 0;
-      this.cards.forEach(i => {
+      this.cards.forEach((i) => {
         if (i.votes.includes(userId)) {
           voteCount++;
         }
       });
 
       const card = this.findCardInStore(cardId);
-      const index = card.votes.findIndex(i => i === userId);
+      const index = card.votes.findIndex((i) => i === userId);
       const leftVote = maxVote - voteCount;
       if (index !== -1) {
         card.votes.splice(index, 1);
@@ -390,8 +376,8 @@ export default {
       const sourceCard = list[sourceCardIndex];
       const targetCard = list[targetCardIndex];
       targetCard.text = `${targetCard.text}  \n------------------  \n${sourceCard.text}`;
-      sourceCard.votes.forEach(i => {
-        if (!targetCard.votes.find(j => j === i)) {
+      sourceCard.votes.forEach((i) => {
+        if (!targetCard.votes.find((j) => j === i)) {
           targetCard.votes.push(i);
         }
       });
@@ -422,9 +408,9 @@ export default {
           dropWithinList = true;
         }
         const { _id, order } = payload;
-        const array = this.getOrderedCardList(listId).map(i => ({
+        const array = this.getOrderedCardList(listId).map((i) => ({
           id: i._id,
-          order: i.order
+          order: i.order,
         }));
         if (removedIndex !== null) {
           array.splice(removedIndex, 1);
@@ -444,31 +430,31 @@ export default {
       }
     },
     getCardPayload(listId) {
-      return index => {
+      return (index) => {
         return this.getOrderedCardList(listId)[index];
       };
     },
     getListLength(listId) {
-      return this.cards.filter(i => i.listId === listId).length;
+      return this.cards.filter((i) => i.listId === listId).length;
     },
     getOrderedCardList(listId) {
       // check array
       return this.displayCards
-        .filter(i => i.listId === listId)
+        .filter((i) => i.listId === listId)
         .sort((a, b) => (a.order < b.order ? -1 : 1));
     },
     updateDisplayCardsOrder(listId, cardId, order) {
-      const card = this.displayCards.find(i => i._id === cardId);
+      const card = this.displayCards.find((i) => i._id === cardId);
       card.listId = listId;
       card.order = order;
     },
     // locally
     removeCard(cardId) {
-      const index = this.displayCards.findIndex(i => i._id === cardId);
+      const index = this.displayCards.findIndex((i) => i._id === cardId);
       if (index !== -1) {
         this.displayCards.splice(index, 1);
       }
-    }
+    },
   },
   watch: {
     lists: {
@@ -476,35 +462,35 @@ export default {
       deep: true,
       handler(value) {
         this.displayLists = value || [];
-      }
+      },
     },
     cards: {
       immediate: true,
       deep: true,
       handler(value) {
         this.displayCards = value || [];
-      }
-    }
+      },
+    },
   },
   computed: {
     ...mapState("auth", ["user"]),
     ...mapState("boards", {
       loadingBoard: "isGetPending",
-      boardsError: "errorOnGet"
+      boardsError: "errorOnGet",
     }),
     ...mapState("lists", {
       loadingLists: "isFindPending",
       creatingList: "isCreatePending",
-      listsError: "errorOnfind"
+      listsError: "errorOnfind",
     }),
     ...mapState("cards", {
-      cardsError: "errorOnfind"
+      cardsError: "errorOnfind",
     }),
     ...mapGetters("boards", { findBoardInStore: "get" }),
     ...mapGetters("lists", { findListsInStore: "find" }),
     ...mapGetters("cards", {
       findCardsInStore: "find",
-      findCardInStore: "get"
+      findCardInStore: "get",
     }),
     isBoardOwner() {
       return this.board.ownerId === this.user._id;
@@ -516,17 +502,17 @@ export default {
     lists() {
       return this.findListsInStore({
         query: {
-          boardId: this.$route.params.id
-        }
+          boardId: this.$route.params.id,
+        },
       }).data.sort((a, b) => (a.order < b.order ? -1 : 1));
     },
     cards() {
       return this.findCardsInStore({
         query: {
-          boardId: this.$route.params.id
-        }
+          boardId: this.$route.params.id,
+        },
       }).data;
-    }
+    },
   },
   components: {
     Container,
@@ -537,8 +523,8 @@ export default {
     QuickEdit,
     VueNumberInput,
     AddNewColumnButton,
-    DeleteColumnButton
-  }
+    DeleteColumnButton,
+  },
 };
 </script>
 
@@ -617,7 +603,7 @@ export default {
 
   &__container {
     display: flex !important;
-    overflow-x: scroll;
+    /* overflow-x: scroll; */
 
     & > div.smooth-dnd-draggable-wrapper {
       flex: 1;
