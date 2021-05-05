@@ -90,6 +90,37 @@
             label="Only author and board owner can edit"
           ></v-switch>
           <div class="drawer__divider"></div>
+          <div class="drawer__multi-row">
+            <div class="drawer__row">Countdown Timer:</div>
+            <div class="drawer__row drawer__row--justify-center">
+              <template v-if="!board.countDown">
+                <VueNumberInput
+                  v-model="countDown"
+                  :min="1"
+                  :max="20"
+                  controls
+                ></VueNumberInput>
+                <span style="margin-left: 8px">min(s)</span>
+              </template>
+              <count-down-timer
+                v-else
+                :time="board.countDown"
+              ></count-down-timer>
+            </div>
+            <div class="drawer__row drawer__row--justify-center">
+              <v-btn
+                depressed
+                color="warning"
+                @click="resetTimer"
+                v-if="board.countDown"
+                >Reset</v-btn
+              >
+              <v-btn depressed color="primary" @click="setTimer" v-else
+                >Start</v-btn
+              >
+            </div>
+          </div>
+          <div class="drawer__divider"></div>
           <AddNewColumnButton @onAddColumn="addColumn($event)" />
           <DeleteColumnButton
             :lists="displayLists"
@@ -99,6 +130,17 @@
           <v-btn block text @click="exportAs('md')">Export as MarkDown</v-btn>
         </div>
       </v-navigation-drawer>
+    </div>
+    <div class="board__status">
+      <count-down-timer
+        class="status__remaining-time"
+        v-if="board.countDown"
+        :time="board.countDown"
+      ></count-down-timer>
+      <div class="status__remaining-vote" v-if="board.allowVote">
+        <span class="mdi mdi-thumb-up"> </span>
+        <span>{{ voteCount }}/{{ board.maxVote }}</span>
+      </div>
     </div>
 
     <perfect-scrollbar>
@@ -200,6 +242,7 @@ import Card from "../components/board/Card";
 import ColorPicker from "../components/board/ColorPicker";
 import AddNewColumnButton from "../components/board/AddNewColumnButton";
 import DeleteColumnButton from "../components/board/DeleteColumnButton";
+import CountDownTimer from "../components/board/CountDownTimer.vue";
 
 export default {
   data() {
@@ -217,6 +260,7 @@ export default {
       },
       displayLists: [], // to avoid async update flash
       displayCards: [],
+      countDown: 5,
     };
   },
   async mounted() {
@@ -353,18 +397,10 @@ export default {
       if (!allowVote) {
         return;
       }
-
       const { _id: userId } = this.user;
-      let voteCount = 0;
-      this.cards.forEach((i) => {
-        if (i.votes.includes(userId)) {
-          voteCount++;
-        }
-      });
-
       const card = this.findCardInStore(cardId);
       const index = card.votes.findIndex((i) => i === userId);
-      const leftVote = maxVote - voteCount;
+      const leftVote = maxVote - this.voteCount;
       if (index !== -1) {
         card.votes.splice(index, 1);
         this.$toasted.info(`${leftVote + 1} vote(s) remaining!`);
@@ -465,6 +501,12 @@ export default {
         this.displayCards.splice(index, 1);
       }
     },
+    setTimer() {
+      this.onUpdateBoard(Date.now() + this.countDown * 60 * 1000, "countDown");
+    },
+    resetTimer() {
+      this.onUpdateBoard(0, "countDown");
+    },
   },
   watch: {
     lists: {
@@ -523,6 +565,16 @@ export default {
         },
       }).data;
     },
+    voteCount() {
+      const { _id: userId } = this.user;
+      let count = 0;
+      this.cards.forEach((i) => {
+        if (i.votes.includes(userId)) {
+          count++;
+        }
+      });
+      return count;
+    },
   },
   components: {
     Container,
@@ -534,6 +586,7 @@ export default {
     VueNumberInput,
     AddNewColumnButton,
     DeleteColumnButton,
+    CountDownTimer,
   },
 };
 </script>
@@ -584,6 +637,20 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+    &.drawer__row--justify-center {
+      justify-content: center;
+    }
+  }
+
+  &__multi-row {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+
+    .drawer__row {
+      margin-bottom: 4px;
+    }
   }
 
   &__divider {
@@ -593,10 +660,21 @@ export default {
 .board {
   min-height: calc(100vh - 100px);
 
-  &__info {
+  &__info,
+  &__status {
     margin: 8px;
     display: flex;
     align-items: baseline;
+  }
+  &__status {
+    justify-content: flex-end;
+
+    .status__remaining-vote {
+      margin-right: 8px;
+      .mdi {
+        margin-right: 8px;
+      }
+    }
   }
   &__name {
     font-weight: 600;
