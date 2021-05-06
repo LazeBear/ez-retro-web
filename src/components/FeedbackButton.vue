@@ -19,5 +19,6 @@ export default {};
   right: -40px;
   bottom: 80px;
   transform: rotate(-90deg);
+  z-index: 9;
 }
 </style>
