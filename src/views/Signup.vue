@@ -87,7 +87,7 @@ export default {
               this.$toasted.global.error("email already exist!");
               return;
             }
-            this.$toasted.gloabl.error(e.message);
+            this.$toasted.global.error(e.message);
           });
       }
     }
