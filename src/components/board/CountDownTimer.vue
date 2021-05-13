@@ -22,7 +22,7 @@ export default {
       return number;
     },
     updateCountDownText() {
-      const remaining = Math.floor((this.time - Date.now()) / 1000);
+      const remaining = this.time - Math.floor(Date.now() / 1000);
       if (remaining < 0) {
         clearTimeout(this.timeout);
         return;
