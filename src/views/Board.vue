@@ -502,7 +502,8 @@ export default {
       }
     },
     setTimer() {
-      this.onUpdateBoard(Date.now() + this.countDown * 60 * 1000, "countDown");
+      const time = Math.floor(Date.now() / 1000 + this.countDown * 60);
+      this.onUpdateBoard(time, "countDown");
     },
     resetTimer() {
       this.onUpdateBoard(0, "countDown");
